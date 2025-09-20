@@ -58,38 +58,63 @@ class SimpleAIValidator:
             # For short docs: use all text up to 20K
             combined_text = pdf_text[:20000]
         
-        # Single comprehensive validation
+        # Comprehensive systematic validation using detailed checklist
         prompt = f"""
-You are validating an FDV thesis against formatting requirements. 
+You are a STRICT FDV thesis validator. Check this thesis against ALL FDV requirements systematically.
 
-CRITICAL REQUIREMENTS TO CHECK:
-1. University name MUST be "UNIVERZA V LJUBLJANI" (uppercase)
-2. Faculty name MUST be "FAKULTETA ZA DRUŽBENE VEDE" (uppercase) 
-3. Must have Author's Declaration section
-4. Summary max 250 words, minimum 3 keywords
-5. Required sections: front page, declaration, summary, TOC, introduction, conclusion, sources
-6. Title in both Slovenian and English
-7. Proper structure and formatting
+GROUP 1 - CRITICAL IDENTITY (Check FIRST):
+✓ University name MUST be exactly "UNIVERZA V LJUBLJANI" (all uppercase)
+✓ Faculty name MUST be exactly "FAKULTETA ZA DRUŽBENE VEDE" (all uppercase)  
+✓ Degree type must be valid FDV program (magistrska/diplomska naloga)
 
-VALIDATION RULES:
-- Only report CLEAR violations of FDV requirements
-- Focus on CRITICAL and MAJOR issues first
-- Be specific about fixes needed
-- Maximum 15 total errors to avoid overwhelming user
-- Don't invent problems - only report real violations
+GROUP 2 - CRITICAL STRUCTURE (Required sections):
+✓ Author's Declaration (Izjava o avtorstvu) - dedicated page
+✓ Abstract in Slovenian (Povzetek) - max 250 words
+✓ Abstract in English - max 250 words
+✓ Table of Contents (Kazalo vsebine) with page numbers
+✓ Introduction chapter (Uvod)
+✓ Conclusion chapter (Zaključek)
+✓ Sources/Bibliography (Viri in literatura) in APA format
+
+GROUP 3 - MAJOR LANGUAGE:
+✓ Title in both Slovenian and English
+✓ Minimum 3 keywords in both languages
+✓ Main text in academic Slovenian
+✓ Proper Slovenian terminology (not English equivalents)
+
+GROUP 4 - MAJOR FORMATTING:
+✓ Font: Times New Roman, 12pt for main text
+✓ Margins: 3cm left, 2.5cm top/right/bottom
+✓ Line spacing: 1.5 for main text
+✓ Sequential page numbering
+✓ Word count limits (abstracts ≤250 words each)
+
+GROUP 5 - CITATIONS:
+✓ APA citation style throughout
+✓ In-text citations match reference list
+✓ References alphabetically ordered
+✓ Complete reference information
+
+VALIDATION INSTRUCTIONS:
+- Check EVERY group systematically
+- Report specific violations with exact location
+- Include fix instructions for each error
+- Focus on most critical issues first
+- Don't miss obvious problems
 
 THESIS TEXT TO VALIDATE:
 {combined_text}
 
-Return JSON array of the most important errors found:
-[{{"page_num": 0, "severity": "CRITICAL", "message": "Specific error and fix needed", "error_type": "formatting"}}]
-"""
+Return comprehensive JSON array of ALL errors found (prioritize by severity):
+[{{"page_num": 0, "severity": "CRITICAL", "message": "University name shows 'X' but must be 'UNIVERZA V LJUBLJANI'", "error_type": "identity", "fix": "Change university name to exact format 'UNIVERZA V LJUBLJANI' in all uppercase", "group": "CRITICAL_IDENTITY"}}]
+
+BE THOROUGH - this is the final check before thesis submission."""
 
         try:
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[{"role": "user", "content": prompt}],
-                max_tokens=2500
+                max_tokens=4000
             )
             
             return self.parse_ai_response(response.choices[0].message.content)
