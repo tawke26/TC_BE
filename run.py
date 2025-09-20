@@ -30,9 +30,11 @@ def main():
     
     api_key = os.getenv("DEEPSEEK_API_KEY") or os.getenv("OPENAI_API_KEY")
     if not api_key:
-        print("ERROR: No API key found in environment")
-        print("Please set DEEPSEEK_API_KEY or OPENAI_API_KEY in .env file")
-        sys.exit(1)
+        print("WARNING: No API key found in environment")
+        print("Please set DEEPSEEK_API_KEY or OPENAI_API_KEY")
+        print("API validation will not work until key is provided")
+    else:
+        print("* API key configured")
     
     print("* Environment configured")
     
